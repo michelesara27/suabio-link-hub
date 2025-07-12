@@ -14,7 +14,304 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      link_clicks: {
+        Row: {
+          browser: string | null
+          city: string | null
+          country: string | null
+          created_at: string | null
+          device_type: string | null
+          id: string
+          ip_address: unknown | null
+          link_id: string
+          os: string | null
+          referer: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          browser?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          device_type?: string | null
+          id?: string
+          ip_address?: unknown | null
+          link_id: string
+          os?: string | null
+          referer?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          browser?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          device_type?: string | null
+          id?: string
+          ip_address?: unknown | null
+          link_id?: string
+          os?: string | null
+          referer?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "link_clicks_link_id_fkey"
+            columns: ["link_id"]
+            isOneToOne: false
+            referencedRelation: "links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      links: {
+        Row: {
+          category: string | null
+          click_count: number | null
+          created_at: string | null
+          description: string | null
+          geo_targeting: string[] | null
+          icon: string | null
+          id: string
+          is_active: boolean | null
+          is_premium: boolean | null
+          position: number | null
+          scheduled_end: string | null
+          scheduled_start: string | null
+          tags: string[] | null
+          thumbnail_url: string | null
+          title: string
+          updated_at: string | null
+          url: string
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          click_count?: number | null
+          created_at?: string | null
+          description?: string | null
+          geo_targeting?: string[] | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_premium?: boolean | null
+          position?: number | null
+          scheduled_end?: string | null
+          scheduled_start?: string | null
+          tags?: string[] | null
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string | null
+          url: string
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          click_count?: number | null
+          created_at?: string | null
+          description?: string | null
+          geo_targeting?: string[] | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_premium?: boolean | null
+          position?: number | null
+          scheduled_end?: string | null
+          scheduled_start?: string | null
+          tags?: string[] | null
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string | null
+          url?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      page_views: {
+        Row: {
+          browser: string | null
+          city: string | null
+          country: string | null
+          created_at: string | null
+          device_type: string | null
+          id: string
+          ip_address: unknown | null
+          os: string | null
+          profile_id: string
+          referer: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          browser?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          device_type?: string | null
+          id?: string
+          ip_address?: unknown | null
+          os?: string | null
+          profile_id: string
+          referer?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          browser?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          device_type?: string | null
+          id?: string
+          ip_address?: unknown | null
+          os?: string | null
+          profile_id?: string
+          referer?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "page_views_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string | null
+          custom_css: string | null
+          display_name: string | null
+          id: string
+          is_premium: boolean | null
+          is_verified: boolean | null
+          seo_description: string | null
+          seo_title: string | null
+          social_instagram: string | null
+          social_linkedin: string | null
+          social_twitter: string | null
+          social_youtube: string | null
+          theme: string | null
+          updated_at: string | null
+          username: string
+          website: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          custom_css?: string | null
+          display_name?: string | null
+          id: string
+          is_premium?: boolean | null
+          is_verified?: boolean | null
+          seo_description?: string | null
+          seo_title?: string | null
+          social_instagram?: string | null
+          social_linkedin?: string | null
+          social_twitter?: string | null
+          social_youtube?: string | null
+          theme?: string | null
+          updated_at?: string | null
+          username: string
+          website?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          custom_css?: string | null
+          display_name?: string | null
+          id?: string
+          is_premium?: boolean | null
+          is_verified?: boolean | null
+          seo_description?: string | null
+          seo_title?: string | null
+          social_instagram?: string | null
+          social_linkedin?: string | null
+          social_twitter?: string | null
+          social_youtube?: string | null
+          theme?: string | null
+          updated_at?: string | null
+          username?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
+      templates: {
+        Row: {
+          created_at: string | null
+          css_styles: Json | null
+          description: string | null
+          id: string
+          is_premium: boolean | null
+          name: string
+          preview_image: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          css_styles?: Json | null
+          description?: string | null
+          id?: string
+          is_premium?: boolean | null
+          name: string
+          preview_image?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          css_styles?: Json | null
+          description?: string | null
+          id?: string
+          is_premium?: boolean | null
+          name?: string
+          preview_image?: string | null
+        }
+        Relationships: []
+      }
+      user_settings: {
+        Row: {
+          analytics_enabled: boolean | null
+          created_at: string | null
+          custom_domain: string | null
+          email_notifications: boolean | null
+          facebook_pixel_id: string | null
+          google_analytics_id: string | null
+          id: string
+          marketing_emails: boolean | null
+          privacy_mode: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          analytics_enabled?: boolean | null
+          created_at?: string | null
+          custom_domain?: string | null
+          email_notifications?: boolean | null
+          facebook_pixel_id?: string | null
+          google_analytics_id?: string | null
+          id: string
+          marketing_emails?: boolean | null
+          privacy_mode?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          analytics_enabled?: boolean | null
+          created_at?: string | null
+          custom_domain?: string | null
+          email_notifications?: boolean | null
+          facebook_pixel_id?: string | null
+          google_analytics_id?: string | null
+          id?: string
+          marketing_emails?: boolean | null
+          privacy_mode?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

@@ -1,16 +1,4 @@
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Sidebar,
   SidebarContent,
@@ -25,19 +13,28 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
   Home,
   Link as LinkIcon,
   BarChart3,
-  Palette,
-  Settings,
   User,
-  Bell,
-  LogOut,
+  Palette,
   Crown,
-  ExternalLink,
-  Menu
+  LogOut,
+  Settings,
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 
 const AppSidebar = () => {
   const { state } = useSidebar();
@@ -47,10 +44,10 @@ const AppSidebar = () => {
 
   const menuItems = [
     { title: "Dashboard", url: "/dashboard", icon: Home },
-    { title: "Meus Links", url: "/links", icon: LinkIcon },
-    { title: "Editor", url: "/editor", icon: Palette },
+    { title: "Links", url: "/links", icon: LinkIcon },
     { title: "Analytics", url: "/analytics", icon: BarChart3 },
-    { title: "Configurações", url: "/profile", icon: Settings },
+    { title: "Perfil", url: "/profile", icon: User },
+    { title: "Editor", url: "/editor", icon: Palette },
   ];
 
   const isActive = (path: string) => currentPath === path;
@@ -80,8 +77,8 @@ const AppSidebar = () => {
                       to={item.url}
                       className={`flex items-center space-x-2 p-2 rounded-lg transition-colors ${
                         isActive(item.url)
-                          ? "bg-green-100 text-green-700 font-medium"
-                          : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                          ? "bg-primary text-primary-foreground"
+                          : "hover:bg-accent"
                       }`}
                     >
                       <item.icon className="h-5 w-5" />
@@ -98,14 +95,16 @@ const AppSidebar = () => {
           <div className="mt-auto p-4">
             <div className="bg-gradient-to-r from-green-50 to-orange-50 p-4 rounded-lg border border-green-200">
               <div className="flex items-center space-x-2 mb-2">
-                <Crown className="h-4 w-4 text-orange-600" />
-                <span className="text-sm font-semibold text-gray-900">Upgrade para Pro</span>
+                <Crown className="h-5 w-5 text-orange-600" />
+                <span className="font-semibold text-gray-900">
+                  Upgrade para Pro
+                </span>
               </div>
-              <p className="text-xs text-gray-600 mb-3">
-                Desbloqueie recursos avançados e analytics detalhados
+              <p className="text-sm text-gray-600 mb-3">
+                Desbloqueie recursos premium e templates exclusivos
               </p>
-              <Button size="sm" className="w-full bg-gradient-to-r from-green-500 to-orange-500 hover:from-green-600 hover:to-orange-600">
-                Fazer Upgrade
+              <Button size="sm" className="w-full bg-gradient-to-r from-green-600 to-orange-600 hover:from-green-700 hover:to-orange-700">
+                Upgrade agora
               </Button>
             </div>
           </div>
@@ -120,10 +119,17 @@ interface AppLayoutProps {
 }
 
 const AppLayout = ({ children }: AppLayoutProps) => {
+  const { signOut } = useAuth();
+  const { profile } = useProfile();
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    navigate("/");
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      navigate('/');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
   };
 
   return (
@@ -131,83 +137,62 @@ const AppLayout = ({ children }: AppLayoutProps) => {
       <div className="min-h-screen flex w-full bg-gray-50">
         <AppSidebar />
         
-        <main className="flex-1 overflow-auto">
-          {/* Top Header */}
-          <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
-            <div className="flex items-center justify-between px-6 py-4">
+        <main className="flex-1 flex flex-col overflow-hidden">
+          <header className="bg-white border-b border-gray-200 px-6 py-4">
+            <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
-                <SidebarTrigger>
-                  <Button variant="ghost" size="sm">
-                    <Menu className="h-4 w-4" />
+                <SidebarTrigger />
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Painel de Controle
+                </h2>
+              </div>
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={profile?.avatar_url || ''} alt={profile?.username || ''} />
+                      <AvatarFallback>
+                        {profile?.username?.[0]?.toUpperCase() || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
                   </Button>
-                </SidebarTrigger>
-                
-                <Badge variant="outline" className="text-green-700 border-green-200 bg-green-50">
-                  <ExternalLink className="w-3 h-3 mr-1" />
-                  suabio.com/joaosilva
-                </Badge>
-              </div>
-
-              <div className="flex items-center space-x-4">
-                <Button variant="ghost" size="sm" className="relative">
-                  <Bell className="h-4 w-4" />
-                  <span className="absolute -top-1 -right-1 h-2 w-2 bg-red-500 rounded-full"></span>
-                </Button>
-
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="flex items-center space-x-2 p-2">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src="/placeholder.svg" alt="João Silva" />
-                        <AvatarFallback className="bg-gradient-to-r from-green-500 to-orange-500 text-white">
-                          JS
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="hidden md:block text-left">
-                        <p className="text-sm font-medium text-gray-900">João Silva</p>
-                        <p className="text-xs text-gray-500">@joaosilva</p>
-                      </div>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56">
-                    <DropdownMenuLabel>
-                      <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">João Silva</p>
-                        <p className="text-xs leading-none text-muted-foreground">
-                          joao@email.com
-                        </p>
-                      </div>
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild>
-                      <Link to="/profile" className="flex items-center">
-                        <User className="mr-2 h-4 w-4" />
-                        <span>Perfil</span>
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to="/profile" className="flex items-center">
-                        <Settings className="mr-2 h-4 w-4" />
-                        <span>Configurações</span>
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Crown className="mr-2 h-4 w-4" />
-                      <span>Upgrade para Pro</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleLogout}>
-                      <LogOut className="mr-2 h-4 w-4" />
-                      <span>Sair</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">
+                        {profile?.display_name || profile?.username}
+                      </p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        @{profile?.username}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to="/profile" className="cursor-pointer">
+                      <User className="mr-2 h-4 w-4" />
+                      Perfil
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/settings" className="cursor-pointer">
+                      <Settings className="mr-2 h-4 w-4" />
+                      Configurações
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sair
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </header>
-
-          {/* Main Content */}
-          <div className="p-6">
+          
+          <div className="flex-1 overflow-auto p-6">
             {children}
           </div>
         </main>
