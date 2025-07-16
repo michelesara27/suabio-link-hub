@@ -85,10 +85,24 @@ export const usePublicProfile = (username: string) => {
 
   const trackLinkClick = async (linkId: string) => {
     try {
+      // Get current click count first
+      const { data: currentLink, error: fetchError } = await supabase
+        .from('links')
+        .select('click_count')
+        .eq('id', linkId)
+        .single();
+
+      if (fetchError) {
+        console.error('Error fetching current click count:', fetchError);
+        return;
+      }
+
       // Increment click count
+      const newClickCount = (currentLink.click_count || 0) + 1;
+      
       await supabase
         .from('links')
-        .update({ click_count: supabase.raw('click_count + 1') })
+        .update({ click_count: newClickCount })
         .eq('id', linkId);
 
       // Track click analytics (optional - could be expanded later)
