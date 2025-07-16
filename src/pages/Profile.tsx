@@ -1,4 +1,3 @@
-
 import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,16 +22,59 @@ import {
   Settings
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useProfile } from "@/hooks/useProfile";
+import { useAuth } from "@/hooks/useAuth";
+import { useState } from "react";
 
 const Profile = () => {
   const { toast } = useToast();
+  const { profile, loading, updateProfile } = useProfile();
+  const { user } = useAuth();
+  const [isUpdating, setIsUpdating] = useState(false);
 
-  const handleSave = () => {
-    toast({
-      title: "Perfil atualizado!",
-      description: "Suas alterações foram salvas com sucesso.",
-    });
+  const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsUpdating(true);
+
+    try {
+      const formData = new FormData(e.currentTarget);
+      const updates = {
+        display_name: formData.get('displayName') as string,
+        username: formData.get('username') as string,
+        bio: formData.get('bio') as string,
+        website: formData.get('website') as string,
+        social_instagram: formData.get('instagram') as string,
+        social_linkedin: formData.get('linkedin') as string,
+        social_twitter: formData.get('twitter') as string,
+        social_youtube: formData.get('youtube') as string,
+      };
+
+      await updateProfile(updates);
+      
+      toast({
+        title: "Perfil atualizado!",
+        description: "Suas alterações foram salvas com sucesso.",
+      });
+    } catch (error) {
+      toast({
+        title: "Erro ao atualizar",
+        description: "Não foi possível salvar as alterações.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdating(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <AppLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <div>Carregando perfil...</div>
+        </div>
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout>
@@ -69,86 +111,138 @@ const Profile = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                {/* Profile Picture */}
-                <div className="flex items-center space-x-6">
-                  <Avatar className="w-20 h-20">
-                    <AvatarImage src="/placeholder.svg" alt="João Silva" />
-                    <AvatarFallback className="bg-gradient-to-r from-green-500 to-orange-500 text-white text-2xl">
-                      JS
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <Button variant="outline">
-                      <Upload className="w-4 h-4 mr-2" />
-                      Alterar Foto
-                    </Button>
-                    <p className="text-sm text-gray-500 mt-2">
-                      JPG, GIF ou PNG. Máximo 1MB.
-                    </p>
+                <form onSubmit={handleSave} className="space-y-6">
+                  {/* Profile Picture */}
+                  <div className="flex items-center space-x-6">
+                    <Avatar className="w-20 h-20">
+                      <AvatarImage src={profile?.avatar_url || "/placeholder.svg"} alt={profile?.display_name || profile?.username || ""} />
+                      <AvatarFallback className="bg-gradient-to-r from-green-500 to-orange-500 text-white text-2xl">
+                        {profile?.display_name?.[0]?.toUpperCase() || profile?.username?.[0]?.toUpperCase() || "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <Button type="button" variant="outline">
+                        <Upload className="w-4 h-4 mr-2" />
+                        Alterar Foto
+                      </Button>
+                      <p className="text-sm text-gray-500 mt-2">
+                        JPG, GIF ou PNG. Máximo 1MB.
+                      </p>
+                    </div>
                   </div>
-                </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label htmlFor="firstName">Nome</Label>
-                    <Input id="firstName" defaultValue="João" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="lastName">Sobrenome</Label>
-                    <Input id="lastName" defaultValue="Silva" />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="username">Nome de usuário</Label>
-                  <div className="flex">
-                    <span className="inline-flex items-center px-3 text-sm text-gray-900 bg-gray-200 border border-r-0 border-gray-300 rounded-l-md">
-                      suabio.com/
-                    </span>
-                    <Input
-                      id="username"
-                      defaultValue="joaosilva"
-                      className="rounded-l-none"
+                    <Label htmlFor="displayName">Nome de Exibição</Label>
+                    <Input 
+                      id="displayName" 
+                      name="displayName"
+                      defaultValue={profile?.display_name || ""} 
                     />
                   </div>
-                </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="bio">Biografia</Label>
-                  <Textarea
-                    id="bio"
-                    defaultValue="Desenvolvedor Full Stack apaixonado por tecnologia e inovação. Criando soluções digitais que fazem a diferença."
-                    className="min-h-[100px]"
-                  />
-                  <p className="text-sm text-gray-500">
-                    Máximo 280 caracteres
-                  </p>
-                </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="username">Nome de usuário</Label>
+                    <div className="flex">
+                      <span className="inline-flex items-center px-3 text-sm text-gray-900 bg-gray-200 border border-r-0 border-gray-300 rounded-l-md">
+                        suabio.com/
+                      </span>
+                      <Input
+                        id="username"
+                        name="username"
+                        defaultValue={profile?.username || ""}
+                        className="rounded-l-none"
+                      />
+                    </div>
+                  </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="bio">Biografia</Label>
+                    <Textarea
+                      id="bio"
+                      name="bio"
+                      defaultValue={profile?.bio || ""}
+                      className="min-h-[100px]"
+                    />
+                    <p className="text-sm text-gray-500">
+                      Máximo 280 caracteres
+                    </p>
+                  </div>
+
                   <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
                     <Input 
                       id="email" 
                       type="email" 
-                      defaultValue="joao@email.com"
-                      className="flex items-center"
+                      defaultValue={user?.email || ""}
+                      disabled
+                      className="bg-gray-100"
+                    />
+                    <p className="text-sm text-gray-500">
+                      O email não pode ser alterado por aqui
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="website">Website</Label>
+                    <Input 
+                      id="website" 
+                      name="website"
+                      defaultValue={profile?.website || ""} 
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Telefone</Label>
-                    <Input id="phone" defaultValue="+55 (11) 99999-9999" />
+
+                  <div className="space-y-4">
+                    <h3 className="font-medium text-gray-900">Redes Sociais</h3>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="instagram">Instagram</Label>
+                      <Input 
+                        id="instagram" 
+                        name="instagram"
+                        defaultValue={profile?.social_instagram || ""} 
+                        placeholder="@seuusuario"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="linkedin">LinkedIn</Label>
+                      <Input 
+                        id="linkedin" 
+                        name="linkedin"
+                        defaultValue={profile?.social_linkedin || ""} 
+                        placeholder="linkedin.com/in/seuusuario"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="twitter">Twitter/X</Label>
+                      <Input 
+                        id="twitter" 
+                        name="twitter"
+                        defaultValue={profile?.social_twitter || ""} 
+                        placeholder="@seuusuario"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="youtube">YouTube</Label>
+                      <Input 
+                        id="youtube" 
+                        name="youtube"
+                        defaultValue={profile?.social_youtube || ""} 
+                        placeholder="youtube.com/@seucanal"
+                      />
+                    </div>
                   </div>
-                </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="location">Localização</Label>
-                  <Input id="location" defaultValue="São Paulo, Brasil" />
-                </div>
-
-                <Button onClick={handleSave} className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700">
-                  Salvar Alterações
-                </Button>
+                  <Button 
+                    type="submit" 
+                    disabled={isUpdating}
+                    className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700"
+                  >
+                    {isUpdating ? "Salvando..." : "Salvar Alterações"}
+                  </Button>
+                </form>
               </CardContent>
             </Card>
           </TabsContent>
