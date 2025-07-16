@@ -83,8 +83,6 @@ const PublicBio = () => {
     return gradients[index % gradients.length];
   };
 
-  const totalClicks = links.reduce((sum, link) => sum + link.clicks, 0);
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-orange-50">
       <div className="container mx-auto px-4 py-8 max-w-md">
@@ -124,20 +122,8 @@ const PublicBio = () => {
               </p>
             )}
 
-            {/* Stats */}
-            <div className="flex justify-center space-x-6 mb-4">
-              <div className="text-center">
-                <div className="text-lg font-bold text-gray-900">{totalClicks.toLocaleString()}</div>
-                <div className="text-xs text-gray-500">Total de Cliques</div>
-              </div>
-              <div className="text-center">
-                <div className="text-lg font-bold text-gray-900">{links.length}</div>
-                <div className="text-xs text-gray-500">Links Ativos</div>
-              </div>
-            </div>
-
             {/* Meta Info */}
-            <div className="flex justify-center space-x-4 text-xs text-gray-500">
+            <div className="flex justify-center text-xs text-gray-500">
               <div className="flex items-center">
                 <Calendar className="w-3 h-3 mr-1" />
                 Desde {formatDate(profile.created_at)}
