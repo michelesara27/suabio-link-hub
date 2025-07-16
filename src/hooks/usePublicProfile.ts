@@ -34,9 +34,14 @@ export const usePublicProfile = (username: string) => {
 
   useEffect(() => {
     const fetchPublicProfile = async () => {
-      if (!username) return;
+      if (!username) {
+        console.log('No username provided');
+        return;
+      }
 
       try {
+        console.log('Fetching profile for username:', username);
+        
         // Fetch profile by username
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
@@ -44,11 +49,19 @@ export const usePublicProfile = (username: string) => {
           .eq('username', username)
           .single();
 
+        console.log('Profile query result:', { profileData, profileError });
+
         if (profileError) {
           throw profileError;
         }
 
+        if (!profileData) {
+          throw new Error('Profile not found');
+        }
+
         setProfile(profileData);
+
+        console.log('Fetching links for user_id:', profileData.id);
 
         // Fetch active links for this user
         const { data: linksData, error: linksError } = await supabase
@@ -58,11 +71,14 @@ export const usePublicProfile = (username: string) => {
           .eq('is_active', true)
           .order('position', { ascending: true });
 
+        console.log('Links query result:', { linksData, linksError });
+
         if (linksError) {
+          console.error('Error fetching links:', linksError);
           throw linksError;
         }
 
-        const formattedLinks: PublicLink[] = linksData.map(link => ({
+        const formattedLinks: PublicLink[] = (linksData || []).map(link => ({
           id: link.id,
           title: link.title,
           url: link.url,
@@ -71,6 +87,7 @@ export const usePublicProfile = (username: string) => {
           icon: link.icon || undefined
         }));
 
+        console.log('Formatted links:', formattedLinks);
         setLinks(formattedLinks);
       } catch (err) {
         console.error('Error fetching public profile:', err);
