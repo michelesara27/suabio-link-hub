@@ -1,7 +1,6 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { 
   Instagram, 
   Linkedin, 
@@ -9,77 +8,82 @@ import {
   ExternalLink, 
   Youtube, 
   MapPin,
-  Calendar
+  Calendar,
+  Loader,
+  Twitter
 } from "lucide-react";
 import { useParams } from "react-router-dom";
+import { usePublicProfile } from "@/hooks/usePublicProfile";
 
 const PublicBio = () => {
   const { username } = useParams();
+  const { profile, links, loading, error, trackLinkClick } = usePublicProfile(username || '');
 
-  const profileData = {
-    name: "João Silva",
-    username: "joaosilva",
-    bio: "Desenvolvedor Full Stack apaixonado por tecnologia e inovação. Criando soluções digitais que fazem a diferença no mundo.",
-    avatar: "/placeholder.svg",
-    location: "São Paulo, Brasil",
-    joinDate: "Janeiro 2024",
-    totalClicks: "12.8K",
-    verified: true
-  };
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-orange-50 flex items-center justify-center">
+        <Loader className="w-8 h-8 animate-spin text-green-500" />
+      </div>
+    );
+  }
 
-  const links = [
-    {
-      id: 1,
-      title: "📱 Instagram",
-      description: "Siga-me para conteúdo diário sobre tech",
-      url: "https://instagram.com/joaosilva",
-      icon: <Instagram className="w-5 h-5" />,
-      clicks: 1247,
-      gradient: "from-pink-500 to-orange-500"
-    },
-    {
-      id: 2,
-      title: "💼 LinkedIn",
-      description: "Conecte-se comigo profissionalmente",
-      url: "https://linkedin.com/in/joaosilva",
-      icon: <Linkedin className="w-5 h-5" />,
-      clicks: 892,
-      gradient: "from-blue-600 to-blue-700"
-    },
-    {
-      id: 3,
-      title: "🚀 GitHub",
-      description: "Veja meus projetos open source",
-      url: "https://github.com/joaosilva",
-      icon: <Github className="w-5 h-5" />,
-      clicks: 623,
-      gradient: "from-gray-800 to-gray-900"
-    },
-    {
-      id: 4,
-      title: "🌐 Portfólio",
-      description: "Meu site pessoal com todos os projetos",
-      url: "https://joaosilva.dev",
-      icon: <ExternalLink className="w-5 h-5" />,
-      clicks: 445,
-      gradient: "from-green-500 to-green-600"
-    },
-    {
-      id: 5,
-      title: "🎥 YouTube",
-      description: "Canal com tutoriais de programação",
-      url: "https://youtube.com/@joaosilva",
-      icon: <Youtube className="w-5 h-5" />,
-      clicks: 234,
-      gradient: "from-red-500 to-red-600"
-    }
-  ];
+  if (error || !profile) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-orange-50 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Perfil não encontrado</h1>
+          <p className="text-gray-600">Este usuário não existe ou o perfil foi removido.</p>
+        </div>
+      </div>
+    );
+  }
 
-  const handleLinkClick = (link: any) => {
-    // Simulate analytics tracking
+  const handleLinkClick = async (link: any) => {
     console.log(`Click tracked for: ${link.title}`);
+    await trackLinkClick(link.id);
     window.open(link.url, '_blank');
   };
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(word => word[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('pt-BR', {
+      month: 'long',
+      year: 'numeric'
+    });
+  };
+
+  const getSocialIcon = (url: string) => {
+    if (url.includes('instagram')) return <Instagram className="w-5 h-5" />;
+    if (url.includes('linkedin')) return <Linkedin className="w-5 h-5" />;
+    if (url.includes('github')) return <Github className="w-5 h-5" />;
+    if (url.includes('youtube')) return <Youtube className="w-5 h-5" />;
+    if (url.includes('twitter')) return <Twitter className="w-5 h-5" />;
+    return <ExternalLink className="w-5 h-5" />;
+  };
+
+  const getLinkGradient = (index: number) => {
+    const gradients = [
+      "from-pink-500 to-orange-500",
+      "from-blue-600 to-blue-700", 
+      "from-gray-800 to-gray-900",
+      "from-green-500 to-green-600",
+      "from-red-500 to-red-600",
+      "from-purple-500 to-purple-600",
+      "from-yellow-500 to-yellow-600",
+      "from-indigo-500 to-indigo-600"
+    ];
+    return gradients[index % gradients.length];
+  };
+
+  const totalClicks = links.reduce((sum, link) => sum + link.clicks, 0);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-orange-50">
@@ -98,12 +102,12 @@ const PublicBio = () => {
           <div className="text-center mb-8">
             <div className="relative inline-block mb-4">
               <Avatar className="w-24 h-24 border-4 border-white shadow-lg">
-                <AvatarImage src="/placeholder.svg" alt={profileData.name} />
+                <AvatarImage src={profile.avatar_url || "/placeholder.svg"} alt={profile.display_name || profile.username} />
                 <AvatarFallback className="bg-gradient-to-r from-green-500 to-orange-500 text-white text-2xl">
-                  JS
+                  {getInitials(profile.display_name || profile.username)}
                 </AvatarFallback>
               </Avatar>
-              {profileData.verified && (
+              {profile.is_verified && (
                 <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center border-2 border-white">
                   <span className="text-white text-xs">✓</span>
                 </div>
@@ -111,17 +115,19 @@ const PublicBio = () => {
             </div>
             
             <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              {profileData.name}
+              {profile.display_name || profile.username}
             </h1>
             
-            <p className="text-gray-600 mb-4 leading-relaxed">
-              {profileData.bio}
-            </p>
+            {profile.bio && (
+              <p className="text-gray-600 mb-4 leading-relaxed">
+                {profile.bio}
+              </p>
+            )}
 
             {/* Stats */}
             <div className="flex justify-center space-x-6 mb-4">
               <div className="text-center">
-                <div className="text-lg font-bold text-gray-900">{profileData.totalClicks}</div>
+                <div className="text-lg font-bold text-gray-900">{totalClicks.toLocaleString()}</div>
                 <div className="text-xs text-gray-500">Total de Cliques</div>
               </div>
               <div className="text-center">
@@ -133,44 +139,49 @@ const PublicBio = () => {
             {/* Meta Info */}
             <div className="flex justify-center space-x-4 text-xs text-gray-500">
               <div className="flex items-center">
-                <MapPin className="w-3 h-3 mr-1" />
-                {profileData.location}
-              </div>
-              <div className="flex items-center">
                 <Calendar className="w-3 h-3 mr-1" />
-                Desde {profileData.joinDate}
+                Desde {formatDate(profile.created_at)}
               </div>
             </div>
           </div>
 
           {/* Links */}
-          <div className="space-y-4">
-            {links.map((link, index) => (
-              <button
-                key={link.id}
-                onClick={() => handleLinkClick(link)}
-                className={`w-full p-4 bg-gradient-to-r ${link.gradient} text-white rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 group`}
-                style={{
-                  animationDelay: `${index * 100}ms`
-                }}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="bg-white/20 p-2 rounded-lg">
-                      {link.icon}
+          {links.length > 0 ? (
+            <div className="space-y-4">
+              {links.map((link, index) => (
+                <button
+                  key={link.id}
+                  onClick={() => handleLinkClick(link)}
+                  className={`w-full p-4 bg-gradient-to-r ${getLinkGradient(index)} text-white rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 group`}
+                  style={{
+                    animationDelay: `${index * 100}ms`
+                  }}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="bg-white/20 p-2 rounded-lg">
+                        {getSocialIcon(link.url)}
+                      </div>
+                      <div className="text-left">
+                        <h3 className="font-semibold">{link.title}</h3>
+                        {link.description && (
+                          <p className="text-sm opacity-90">{link.description}</p>
+                        )}
+                      </div>
                     </div>
-                    <div className="text-left">
-                      <h3 className="font-semibold">{link.title}</h3>
-                      <p className="text-sm opacity-90">{link.description}</p>
+                    <div className="flex items-center space-x-2 opacity-75">
+                      <ExternalLink className="w-4 h-4" />
                     </div>
                   </div>
-                  <div className="flex items-center space-x-2 opacity-75">
-                    <ExternalLink className="w-4 h-4" />
-                  </div>
-                </div>
-              </button>
-            ))}
-          </div>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <ExternalLink className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+              <p className="text-gray-600">Nenhum link disponível</p>
+            </div>
+          )}
 
           {/* Call to Action */}
           <div className="mt-8 text-center">
@@ -199,13 +210,12 @@ const PublicBio = () => {
           onClick={() => {
             if (navigator.share) {
               navigator.share({
-                title: `${profileData.name} - Suabio`,
-                text: profileData.bio,
+                title: `${profile.display_name || profile.username} - Suabio`,
+                text: profile.bio || `Confira o perfil de ${profile.display_name || profile.username}`,
                 url: window.location.href,
               });
             } else {
               navigator.clipboard.writeText(window.location.href);
-              // Could add a toast here
             }
           }}
         >
