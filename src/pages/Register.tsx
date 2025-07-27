@@ -1,4 +1,3 @@
-
 import { RegisterForm } from '@/components/auth/RegisterForm';
 
 const Register = () => {
